@@ -2,10 +2,7 @@ package Test;
 
 import com.smart.domain.Beans;
 import com.smart.domain.Car;
-import com.smart.domain.XhContractExecution;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /*采用应用上下文加载bean*/
 

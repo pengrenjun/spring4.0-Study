@@ -19,19 +19,19 @@ public class Test {
         ApplicationContext applicationContext=new ClassPathXmlApplicationContext("classpath:springAop2-@Aspect.xml");
 
 
-        //获取代理的实例 实现了原代码的增强
+        //??????????? ??????????????
         UserService userServiceProxy= applicationContext.getBean(UserService.class);
         XhContractService xhContractServiceProxy=applicationContext.getBean(XhContractService.class);
 
 
         User user=new User();
         user.setUserId(2);
-        user.setUserName("小明");
+        user.setUserName("��??");
         user.setPassword("123456");
 
         userServiceProxy.addUser(user);
 
-        XhContractExecution xhContractExecution=new XhContractExecution("123456","合同客户");
+        XhContractExecution xhContractExecution=new XhContractExecution("123456","??????");
         xhContractServiceProxy.addContract(xhContractExecution);
 
 

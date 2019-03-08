@@ -1,7 +1,6 @@
 package Test;
 
 import Utils.ClassLocationUtils;
-import com.smart.reflect.PrivateCar;
 
 public class ClassLoaderTest {
 

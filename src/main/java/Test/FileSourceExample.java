@@ -48,12 +48,12 @@ public class FileSourceExample {
     }
 
     /*获取特殊编码风格的文件内容信息(通过EncodeResource对Resource进行资源编码处理)*/
-    public static String getFileContent(Resource resourceToEncode,String codeStyle) throws IOException {
+    public static String getFileContent(Resource resourceToEncode, String codeStyle) throws IOException {
        return  FileCopyUtils.copyToString(getEncodeResource(resourceToEncode,codeStyle).getReader());
     }
 
     /*通过Resource获取特殊编码的EncodeResource*/
-    public static EncodedResource getEncodeResource(Resource resourceToEncode,String codeStyle) {
+    public static EncodedResource getEncodeResource(Resource resourceToEncode, String codeStyle) {
         return  new EncodedResource(resourceToEncode,codeStyle);
     }
 

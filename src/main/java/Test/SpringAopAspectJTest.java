@@ -1,7 +1,6 @@
 package Test;
 
 
-import com.smart.SpringAop.MemberCenterImpl;
 import com.smart.SpringAop.MemberCenterInterface;
 import com.smart.SpringAop.SpringAopAspectJ.BaseControllerAsprctJ;
 import com.smart.SpringAop.UserInfoService;

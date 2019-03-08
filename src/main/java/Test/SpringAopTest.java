@@ -52,7 +52,7 @@ public class SpringAopTest {
 
     private static void testFunctionInnerAdvice() {
         //环绕增强为例
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         UserInfoServiceImpl proxyUserInfoServiceXml=(UserInfoServiceImpl)ctx.getBean("userInforServiceProxyC");
         //处理前仅对userIp的获取实现了环绕增强,但对其中调用的方法没有进行增强处理
         proxyUserInfoServiceXml.getUserIp("1");
@@ -61,7 +61,7 @@ public class SpringAopTest {
 
     private static void testDefaultAdvisorAutoProxyCreator() {
         System.out.println("-----------------------------------通过BeanNameAutoProyCreator配置自动代理----------------------------");
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         //容器在创建BeanNameAutoProyUser BeanNameAutoProyForm两个实例时就创建了相应的代理类
         UserInfoServiceImpl userInfoService=(UserInfoServiceImpl)ctx.getBean("DefaultAdvisorAutoProxyUser");
         userInfoService.getUserPassWord("1");
@@ -70,7 +70,7 @@ public class SpringAopTest {
 
     private static void testBeanNameAutoProyCreator() {
         System.out.println("-----------------------------------通过BeanNameAutoProyCreator配置自动代理----------------------------");
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         //容器在创建BeanNameAutoProyUser BeanNameAutoProyForm两个实例时就创建了相应的代理类
         UserInfoServiceImpl userInfoService=(UserInfoServiceImpl)ctx.getBean("BeanNameAutoProyUser");
         UserInfoServiceDelegate userInfoServiceDelegate=new UserInfoServiceDelegate();
@@ -82,7 +82,7 @@ public class SpringAopTest {
     }
 
     private static void testComposableCutAdvice() {
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         UserInfoServiceImpl userInfoService=(UserInfoServiceImpl)ctx.getBean("proxyTargetBycomposableAdvice");
         UserInfoServiceDelegate userInfoServiceDelegate=new UserInfoServiceDelegate();
         userInfoServiceDelegate.setUserInfoService(userInfoService);
@@ -91,7 +91,7 @@ public class SpringAopTest {
 
     private static void testControllerFlowAdvice() {
 
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         UserInfoServiceImpl userInfoService=(UserInfoServiceImpl)ctx.getBean("proxyTargetBycontrollerFlowAdvice");
         UserInfoServiceDelegate userInfoServiceDelegate=new UserInfoServiceDelegate();
         userInfoServiceDelegate.setUserInfoService(userInfoService);
@@ -101,7 +101,7 @@ public class SpringAopTest {
 
 
     private static void testDynamicPointCutAdvice() {
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         //在创建动态代理类的时候就进行了类和方法的静态检测
         UserInfoServiceImpl proxyUserInfoServiceXml=(UserInfoServiceImpl)ctx.getBean("proxyUserServiceByDynamicPointCut");
         System.out.println("-------------通过动态代理创建的切面配合增强实现对用户getUserIp方法的环绕增强处理(且对入参进行了动态检测)----------------------------");
@@ -110,7 +110,7 @@ public class SpringAopTest {
     }
 
     private static void testRegecAdvice() {
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         UserInfoServiceImpl proxyUserInfoServiceXml=(UserInfoServiceImpl)ctx.getBean("proxyTargetByRegexAdvice");
         System.out.println("-------------通过正则表达式创建的切面配合增强实现对用户getUser方法的环绕增强处理----------------------------");
         proxyUserInfoServiceXml.getUserPassWord("1");
@@ -119,7 +119,7 @@ public class SpringAopTest {
     }
 
     private static void testStaticMethodPointAdviceToUserPassWordFuction() {
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         UserInfoServiceImpl proxyUserInfoServiceXml=(UserInfoServiceImpl)ctx.getBean("ProxyFactoryBeanUser");
         ProxyForumServiceImpl proxyForumService=(ProxyForumServiceImpl)ctx.getBean("ProxyFactoryBeanForum");
         System.out.println("-------------通过静态类方法创建的切面配合增强实现对用户密码信息获取方法的环绕增强处理----------------------------");
@@ -132,7 +132,7 @@ public class SpringAopTest {
     }
 
     private static void testIntroduceAdvice() {
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         UserInfoServiceImpl proxyUserInfoServiceXml=(UserInfoServiceImpl)ctx.getBean("userInforServiceProxyE");
         MonitorInterface monitor=(MonitorInterface)proxyUserInfoServiceXml;
         monitor.setBeforeAdvice(true);
@@ -141,7 +141,7 @@ public class SpringAopTest {
     }
 
     private static void testExceptionAdvice() {
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         UserInfoServiceImpl proxyUserInfoServiceXml=(UserInfoServiceImpl)ctx.getBean("userInforServiceProxyD");
         System.out.println("----------------------Cglib动态代理的异常抛出增强---------------------------------------------");
         proxyUserInfoServiceXml.getUserName("2");
@@ -149,7 +149,7 @@ public class SpringAopTest {
     }
 
     private static void testAroundAdvice() {
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         UserInfoServiceImpl proxyUserInfoServiceXml=(UserInfoServiceImpl)ctx.getBean("userInforServiceProxyC");
         System.out.println("----------------------Cglib动态代理的环绕增强---------------------------------------------");
         proxyUserInfoServiceXml.getUserName("2");
@@ -158,7 +158,7 @@ public class SpringAopTest {
     private static void testBeforeAndAfterAdvice() {
 
         //通过springXml配置设置前置代理
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         //采用Cglib动态代理配置
         UserInfoServiceImpl proxyUserInfoServiceXml=(UserInfoServiceImpl)ctx.getBean("userInforServiceProxyB");
         System.out.println("----------------------Cglib动态代理的前置后置配置---------------------------------------------");
@@ -186,7 +186,7 @@ public class SpringAopTest {
 
 
         //通过springXml配置设置前置代理
-        ApplicationContext ctx=BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
+        ApplicationContext ctx= BeanFactoryTest.getApplicationContextByXml("UpLevelBeans.xml");
         //采用Cglib动态代理配置
         UserInfoServiceImpl proxyUserInfoServiceXml=(UserInfoServiceImpl)ctx.getBean("userInforServiceProxyA");
         System.out.println("----------------------Cglib动态代理的前置配置---------------------------------------------");

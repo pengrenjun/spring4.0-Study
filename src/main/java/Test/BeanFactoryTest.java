@@ -1,12 +1,14 @@
 package Test;
 
 
-
 import com.alibaba.fastjson.JSONObject;
 import com.smart.domain.SystemSetting;
 import com.smart.domain.XhContractExecution;
 import com.smart.domain.XhContractExecutionDetail;
-import com.smart.ioc.*;
+import com.smart.ioc.ApplySystemSetting;
+import com.smart.ioc.XhContractExecutionBeanPostProcessor;
+import com.smart.ioc.XhContractExecutionclassAwareBeanPostProcessor;
+import com.smart.ioc.abstractXhcontractExecution;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -15,7 +17,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
-import java.util.*;
 
 /*通过BeanFactory加载实体bean对象*/
 public class BeanFactoryTest {

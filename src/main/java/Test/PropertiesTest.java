@@ -3,7 +3,6 @@ package Test;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Properties;
 
 public class PropertiesTest  {
