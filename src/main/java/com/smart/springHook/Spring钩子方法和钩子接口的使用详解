@@ -1,0 +1,183 @@
+【BeanFactoryPostProcessor】：看看这个接口的说明文档
+/**
+Allows for custom modification of an application context's bean definitions
+
+A BeanFactoryPostProcessor may interact with and modify bean
+ * definitions, but never bean instances. Doing so may cause premature bean
+ * instantiation, violating the container and causing unintended side-effects.
+ * If bean instance interaction is required, consider implementing
+ * {@link BeanPostProcessor} instead.
+允许我们在工厂里所有的bean被加载进来后但是还没初始化前，对所有bean的属性进行修改也可以add属性值
+*/
+AbstractApplicationContext 文件：refresh()
+public void refresh() throws BeansException, IllegalStateException {
+    synchronized (this.startupShutdownMonitor) {
+        // Prepare this context for refreshing.
+        prepareRefresh();
+        // 解析xml完成，存储在一个具体的bean工厂中
+        ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+        // bean工厂的初始化操作
+        prepareBeanFactory(beanFactory);
+        try {
+            // 由子类继承去实现该类，当前该方法为空
+            postProcessBeanFactory(beanFactory);
+            // invoke 其中存在的BeanFactoryPostProcessors ->处理加载BeanFactoryPostProcessor实现类
+         **   invokeBeanFactoryPostProcessors(beanFactory);
+        ...
+
+|_> > PostProcessorRegistrationDelegate :
+invokeBeanFactoryPostProcessors方法的参数为bean工厂ConfigurableListableBeanFactory和当前已知的postprocessor对象，
+函数分为了好几部分去处理，截取其中我们关心的部分即可（其实还包含了优先级、属性等类似处理过程）
+String[] postProcessorNames =
+                beanFactory.getBeanNamesForType(BeanFactoryPostProcessor.class, true, false);
+        // 筛选出bean工程中存在的所有实现BeanFactoryPostProcessor类的类名称
+
+        List<BeanFactoryPostProcessor> priorityOrderedPostProcessors = new ArrayList<BeanFactoryPostProcessor>();
+        List<String> orderedPostProcessorNames = new ArrayList<String>();
+        List<String> nonOrderedPostProcessorNames = new ArrayList<String>();
+        for (String ppName : postProcessorNames) {
+            if (processedBeans.contains(ppName)) {
+                // 已经存在了，不再处理
+            }
+            else if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+                priorityOrderedPostProcessors.add(beanFactory.getBean(ppName, BeanFactoryPostProcessor.class));
+                // 为PriorityOrdered类型
+            }
+            else if (beanFactory.isTypeMatch(ppName, Ordered.class)) {
+                orderedPostProcessorNames.add(ppName);
+                // 为Ordered类型
+            }
+            else {
+                nonOrderedPostProcessorNames.add(ppName);
+                // 这个就是我们当前需要关心的PostProcessors
+            }
+        }
+
+        ...
+        List<BeanFactoryPostProcessor> nonOrderedPostProcessors = new ArrayList<BeanFactoryPostProcessor>();
+        for (String postProcessorName : nonOrderedPostProcessorNames) {
+            nonOrderedPostProcessors.add(beanFactory.getBean(postProcessorName, BeanFactoryPostProcessor.class));
+            // 获取自定义的BeanFactoryPostProcessor
+            // 这里有一点需要注意到！！！！
+        }
+        invokeBeanFactoryPostProcessors(nonOrderedPostProcessors, beanFactory);
+
+* 上述代码中nonOrderedPostProcessors.add(beanFactory.getBean(postProcessorName, BeanFactoryPostProcessor.class));
+中使用了getBean，起初没注意到以为是生成具体的对象然后修改，其实不是，getBean后面还有一个参数BeanFactoryPostProcessor.class，
+注意看这个函数，会发现返回的是一个抽象类，结论就是nonOrderedPostProcessors添加的不是bean实例，
+而是beandefinition，在实例化前！！！，这点很重要
+
+|_>:执行自定义的代码：
+private static void invokeBeanFactoryPostProcessors(
+        Collection<? extends BeanFactoryPostProcessor> postProcessors, ConfigurableListableBeanFactory beanFactory) {
+    for (BeanFactoryPostProcessor postProcessor : postProcessors) {
+        postProcessor.postProcessBeanFactory(beanFactory);
+        // 调用每一个自定义的BeanFactoryPostProcessor的方法
+        // 在本文章中就会去调用自定义的CustomBeanFactoryPostProcessor的postProcessBeanFactory方法
+    }
+}
+
+
+执行顺序：bean工厂后置处理器—>构造方法—>init-method 最后属性值取得是bean工厂后置处理器里面处理的结果？
+原因说明（分析源码）：https://www.jianshu.com/p/f80b77d65d39
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+【BeanPostProcessor】 AOP实现动态代理的关键接口  InstantiationAwareBeanPostProcessor：
+ 如果我们想在Spring容器中完成bean实例化、配置以及其他初始化方法前后要添加一些自己逻辑处理。
+ 我们需要定义一个或多个BeanPostProcessor接口实现类，然后注册到Spring IoC容器中。
+入口依旧是refresh函数，在完成初始化之后，进入到finishBeanFactoryInitialization(beanFactory)执行BeanPostProcessor的相关操作
+|-> AbstractAutowireCapableBeanFactory 文件
+
+protected Object initializeBean(final String beanName, final Object bean, RootBeanDefinition mbd) {
+    if (System.getSecurityManager() != null) {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                invokeAwareMethods(beanName, bean);
+                return null;
+            }
+        }, getAccessControlContext());
+    }
+    else {
+        invokeAwareMethods(beanName, bean);
+        // aware同样是对外提供的钩子
+    }
+
+    Object wrappedBean = bean;
+    if (mbd == null || !mbd.isSynthetic()) {
+      **  wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
+        // 这一步就是执行自定义的beanpostprocessor的before操作
+    }
+
+    try {
+        invokeInitMethods(beanName, wrappedBean, mbd);
+        // 执行init方法
+    }
+    catch (Throwable ex) {
+        throw new BeanCreationException(
+                (mbd != null ? mbd.getResourceDescription() : null),
+                beanName, "Invocation of init method failed", ex);
+    }
+
+    if (mbd == null || !mbd.isSynthetic()) {
+      wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
+      // 这一步就是执行自定义的beanpostprocessor的after操作
+    }
+    return wrappedBean;
+}
+
+>> applyBeanPostProcessorsBeforeInitialization:
+public Object applyBeanPostProcessorsBeforeInitialization(
+                    Object existingBean, String beanName)
+        throws BeansException {
+    Object result = existingBean;
+    for (BeanPostProcessor beanProcessor : getBeanPostProcessors()) {
+       // 获取所有的BeanPostProcessor对象，执行postProcessBeforeInitialization方法
+        result = beanProcessor.postProcessBeforeInitialization(result, beanName);
+        if (result == null) {
+            return result;
+        }
+    }
+    return result;
+    // 然后把执行结果返回
+}
+
+>> invokeInitMethods:
+protected void invokeInitMethods(String beanName,
+                       final Object bean, RootBeanDefinition mbd)
+           throws Throwable {
+
+       boolean isInitializingBean = (bean instanceof InitializingBean);
+       if (isInitializingBean && (mbd == null || !mbd.isExternallyManagedInitMethod("afterPropertiesSet"))) {
+           if (logger.isDebugEnabled()) {
+               logger.debug("Invoking afterPropertiesSet() on bean with name '" + beanName + "'");
+           }
+           if (System.getSecurityManager() != null) {
+               try {
+                   AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
+                       @Override
+                       public Object run() throws Exception {
+                           ((InitializingBean) bean).afterPropertiesSet();
+                           return null;
+                       }
+                   }, getAccessControlContext());
+               }
+               catch (PrivilegedActionException pae) {
+                   throw pae.getException();
+               }
+           }
+           else {
+               ((InitializingBean) bean).afterPropertiesSet();
+           }
+       }
+
+       if (mbd != null) {
+          // invoke 反射执行init方法
+           String initMethodName = mbd.getInitMethodName();
+           if (initMethodName != null && !(isInitializingBean && "afterPropertiesSet".equals(initMethodName)) &&
+                   !mbd.isExternallyManagedInitMethod(initMethodName)) {
+               invokeCustomInitMethod(beanName, bean, mbd);
+           }
+       }
+   }

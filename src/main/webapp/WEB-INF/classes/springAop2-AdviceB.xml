@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/context 
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+    <!--AutoProxy 自动实现动态代理的配置-->
+    <!--spring1.2基于接口的Aop配置-->
+	<context:component-scan base-package="com.smart.SpringAop2"/>
+
+    <bean id="userServiceImpl" class="com.smart.SpringAop2.MethodAdvice.serviceImpl.UserServiceImpl" />
+
+    <bean id="logServiceImpl" class="com.smart.SpringAop2.MethodAdvice.serviceImpl.LogServiceImpl"/>
+
+
+    <!--定义自定义的两个增强-->
+    <bean id="beforAdvice" class="com.smart.SpringAop2.MethodAdvice.Advice.MethodBeforeAdvice"/>
+    <bean id="afterReturnAdvice" class="com.smart.SpringAop2.MethodAdvice.Advice.MethodReturnAdvice" depends-on="logServiceImpl"/>
+
+    <!--定义自定义的拦截Interaptor-->
+    <bean id="debugInteraptor" class="com.smart.SpringAop2.MethodAdvice.Interaptor.DebugInteraptor"/>
+
+    <!--Spring1.2 AOP配置的主要部分 为目标对象自动配置代理实例 在代码中不需要显示获取代理的 -->
+       <bean id="userServiceAutoProxy"  class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+           <property name="beanNames">
+               <value>*userServiceImpl</value>
+               <!--为匹配的目标类实现自动的动态代理 我们在使用的时候，完全不需要关心代理了，直接使用原来的类型就可以了，这是非常方便的-->
+           </property>
+
+       <!--配置拦截器(自定义的增强) 可以配置advice advisor Interceptor-->
+
+           <!--这种配置的效果只是精确到类 会对类里面的所有的方法进行代理增强-->
+           <property name="interceptorNames">
+               <list>
+                   <value >debugInteraptor</value>
+               </list>
+           </property>
+
+       </bean>
+
+</beans>
+

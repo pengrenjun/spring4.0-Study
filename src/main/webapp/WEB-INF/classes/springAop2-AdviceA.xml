@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/context 
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+    <!--spring1.2基于接口的Aop配置-->
+	<context:component-scan base-package="com.smart.SpringAop2"/>
+
+
+    <bean id="userServiceImpl" class="com.smart.SpringAop2.MethodAdvice.serviceImpl.UserServiceImpl" />
+
+    <!--定义自定义的两个增强-->
+    <bean id="beforAdvice" class="com.smart.SpringAop2.MethodAdvice.Advice.MethodBeforeAdvice"/>
+    <bean id="afterReturnAdvice" class="com.smart.SpringAop2.MethodAdvice.Advice.MethodReturnAdvice"/>
+
+    <!--定义自定义的拦截Interaptor-->
+    <bean id="debugInteraptor" class="com.smart.SpringAop2.MethodAdvice.Interaptor.DebugInteraptor"/>
+
+    <!--Spring1.2 AOP配置的主要部分 配置代理实例 -->
+       <bean id="userServiceProxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <!--配置代理的接口-->
+           <property name="interfaces">
+               <list>
+                   <value>com.smart.SpringAop2.MethodAdvice.service.UserService</value>
+               </list>
+           </property>
+       <!--代理接口的具体实现(目标对象)-->
+           <property name="target" ref="userServiceImpl"/>
+           
+       <!--配置拦截器(自定义的增强) 可以配置advice advisor Interceptor-->
+
+           <!--这种配置的效果只是精确到类 会对类里面的所有的方法进行代理增强-->
+           <property name="interceptorNames">
+               <list>
+                   <value >beforAdvice</value>
+                   <value >afterReturnAdvice</value>
+               </list>
+           </property>
+
+       </bean>
+
+      <!--spring1.2这种配置配置起来很麻烦，不同的实现接口如果需要进行动态代理需要分别进行配置-->
+
+      <!--userServiceProxy 代理实例会对目标对象类中所有方法进行拦截处理 -->
+      <!--下面配置会特定对某些方法进行拦截处理-->
+      <!--使用Advisor定义拦截的切入点 同时配置需要织入的增强advice-->
+
+      <!--定义一个只对addUser方法进行返回的记录日志的增强代码的切入点-->
+      <bean id="addUserAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+          <!--定义织入的处理程序(增强) 这个只能配置一个增强处理-->
+          <property name="advice" ref="afterReturnAdvice"/>
+          <!--定义需要进行拦截的方法名称-->
+          <property name="mappedNames">
+              <list>
+                  <value>addUser</value>
+              </list>
+          </property>
+      </bean>
+
+
+     <!--定义UserService的代理配置类 -->
+    <bean id="userServiceProxyB" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <!--配置代理的接口-->
+        <property name="interfaces">
+            <list>
+                <value>com.smart.SpringAop2.MethodAdvice.service.UserService</value>
+            </list>
+        </property>
+        <!--代理接口的具体实现(目标对象)-->
+        <property name="target" ref="userServiceImpl"/>
+
+        <!--配置拦截器(自定义的增强) 可以配置advice advisor Interceptor-->
+        <!--这种配置的效果只是精确到类 会对类里面的所有的方法进行代理增强-->
+        <!--注意，这里的 mappedNames 配置是可以指定多个的，用逗号分隔，可以是不同类中的方法。
+        相比直接指定 advice，advisor ，实现了更细粒度的控制因为在这里配置 advice 的话，所有方法都会被拦截-->
+        <property name="interceptorNames">
+            <list>
+                <!--精确到方法进行拦截处理 -->
+                <value>addUserAdvisor</value>
+
+                <!--所有的方法都提供前置增强的处理-->
+                <value>beforAdvice</value>
+
+                <value>debugInteraptor</value>
+            </list>
+        </property>
+
+    </bean>
+
+
+
+
+
+
+
+
+</beans>
+

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util" xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/beans/spring-util-4.0.xsd http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <bean id="car" class="com.smart.domain.Car"
+          p:brand="红旗CA72"
+          p:maxSpeed="200"
+          p:color="red"
+    />
+
+    <bean id="xhContractExecution" class="com.smart.domain.XhContractExecution"
+      p:contractType="专项合同"
+      p:contractNumber="test00001"
+          init-method="initMethod"
+
+    /> <!--scope="prototype"-->
+
+    <bean id="xhContractExecutionD" class="com.smart.domain.XhContractExecution">
+
+        <property name="projectName"><value>兴华一期项目</value></property><!--属性注入-->
+        <property name="id"><value>id123456789</value></property>
+
+        <constructor-arg index="0" type="java.lang.String"><!--构造函数注入(类型结合索引进行参数注入)-->
+            <value>dh123456789</value>
+        </constructor-arg>
+        <constructor-arg index="1" type="java.lang.String">
+            <value>北京荣之联</value>
+        </constructor-arg>
+
+    </bean>
+
+
+    <!--循环依赖的问题:Requested bean is currently in creation: Is there an unresolvable circular reference?-->
+   <!-- <bean id="xhContractExecutionE" class="com.smart.domain.XhContractExecution">
+
+        <constructor-arg value="dh1237849"/>
+        <constructor-arg ref="xhContractExecutionDetailA"/>
+    </bean>
+
+    <bean id="xhContractExecutionDetailA" class="com.smart.domain.XhContractExecutionDetail">
+
+        <constructor-arg value="dh1237849"/>
+        <constructor-arg ref="xhContractExecutionE"/>
+    </bean>-->
+    <!--Requested bean is currently in creation: Is there an unresolvable circular reference?-->
+
+    <!--改用属性注入的方式-->
+    <bean id="xhContractExecutionE" class="com.smart.domain.XhContractExecution">
+
+        <property name="formNo"><value>dh528935345</value></property>
+        <property name="xhContractExecutionDetail" ref="xhContractExecutionDetailA"/>
+    </bean>
+
+    <bean id="xhContractExecutionDetailA" class="com.smart.domain.XhContractExecutionDetail">
+
+        <property name="period_name"><value>兴华一期项目</value></property>
+        <property name="xhContractExecution" ref="xhContractExecutionE"/>
+    </bean>
+    <!--改用属性注入的方式-->
+
+
+    <!--非静态工厂方法注入 先实例化工厂,再创建bean-->
+    <bean id="xhContractExecutionFactory" class="com.smart.ioc.XhContractExecutionFactory"/>
+
+    <bean id="xhContractExecutionF" factory-bean="xhContractExecutionFactory" factory-method="getXhContractExecutionBean"/>
+    <!--非静态工厂方法注入 先实例化工厂,再创建bean-->
+
+
+    <!--静态工厂方法注入配置方法-->
+    <bean id="xhContractExecutionG" class="com.smart.ioc.XhContractExecutionFactory"  factory-method="staticGetXhContractExecutionBean"/>
+    <!--静态工厂方法注入配置方法-->
+
+    <!--XML特殊字符 & ,<,>,",'的处理   <![CDATA[ 含特殊字符的字面值 ]]-->
+    <bean id="xhContractExecutionDetailB" class="com.smart.domain.XhContractExecutionDetail">
+
+        <property name="period_name"><value><![CDATA[ <兴华一期项目&ronglian>]]> </value></property>
+
+        <!--ref bean 引用其他bean-->
+        <property name="xhContractExecution">
+            <ref bean="xhContractExecutionE"></ref>
+        </property>
+    </bean>
+
+
+
+    <!--子容器引入父容器bean-->
+
+    <bean id="xhContractExecutionDetailC" class="com.smart.domain.XhContractExecutionDetail">
+
+        <property name="period_name"><value><![CDATA[ <兴华一期项目&ronglian>]]> </value></property>
+
+        <!--ref bean 引用其他bean-->
+        <property name="xhContractExecution">
+            <ref bean="xhContractExecutionD"></ref>
+        </property>
+    </bean>
+
+
+    <!--子容器引入父容器bean-->
+
+
+    <!--级联属性的应用-->
+    <bean id="xhContractExecutionH" class="com.smart.domain.XhContractExecution">
+     <property name="jlxhContractExecutionDetail.period_name" value="阶段名称：级联属性应用设置"/>
+    </bean>
+
+    <!--list属性配置-->
+    <bean id="xhContractExecutionI" class="com.smart.domain.XhContractExecution">
+        <property name="xhContractExecutionDetailList" >
+            <list><!--通过list标签 可以存入多个值,否则只能存入一个值-->
+                <!--IllegalStateException: Cannot convert value of type [java.lang.String] to required type [com.smart.domain.XhContractExecutionDetail]
+                for property 'xhContractExecutionDetailList[0]': no matching editors or conversion strategy found-->
+               <!-- <value>qweasdasdfa</value>-->
+            <ref bean="xhContractExecutionDetailA"></ref>
+            <ref bean="xhContractExecutionDetailB"></ref>
+            </list>
+        </property>
+    </bean>
+
+    <!--Map属性配置-->
+    <bean id="xhContractExecutionJ" class="com.smart.domain.XhContractExecution">
+        <property name="xhMap">
+            <map><!--bean 的属性设为HashMap 这块会有提示 但可以使用HashMap作为属性类型-->
+                <entry>
+
+                    <key><value>key123</value></key><!--value标签注意添加-->
+                    <ref bean="xhContractExecutionDetailA"></ref>
+                </entry>
+
+                <entry>
+                    <key><value>key789</value></key>
+                    <ref bean="xhContractExecutionDetailB"></ref>
+                </entry>
+
+            </map>
+        </property>
+    </bean>
+
+
+    <!--lookUp方法注入,每次创建单例的XhContractExecution,但对应的XhContractExecutionDetail却是不同的(新的实例)-->
+     <!--prototype类型的bean-->
+    <bean id="xhContractExecutionDetailE" class="com.smart.domain.XhContractExecutionDetail"
+         p:period_name="兴华项目xh" p:createdBy="cz"  scope="prototype"
+    />
+
+    <!--实施方法注入-->
+
+    <bean id="singleXhContractExeInterface" class="com.smart.ioc.abstractXhcontractExecution">
+        <lookup-method bean="xhContractExecutionDetailE" name="getPrototypeXhContractExecutionDetail"></lookup-method>
+    </bean>
+
+
+    <!--通过依赖关系配置系统参数-->
+    <bean id="initSystemSeting" class="com.smart.domain.SystemSettingManageInIt"/>
+    <!--当前系统参数的值以依赖于 系统参数配置的初始化实现方法-->
+    <bean id="currentSystemSetting" class="com.smart.domain.SystemSetting" depends-on="initSystemSeting"/>
+
+    <!--一个bean引入另一个bean 的id-->
+    <bean id="xhContractExecutionDetailF" class="com.smart.domain.XhContractExecutionDetail">
+        <property name="entityId"><idref bean="xhContractExecutionD"></idref></property>
+    </bean>
+
+    <!--通过FactoryBean接口配置bean的信息,简化实例配置-->
+    <bean id="CEfactoryBeanXhContractExecution" class="com.smart.ioc.FactoryBeanXhContractExecution">
+
+        <property name="infoMap">
+            <map>
+                <entry key="deptName" value="审计一部/流程化一部"/>
+                <entry key="id" value="id1238974892"/>
+            </map>
+        </property>
+
+    </bean>
+
+    <!--通过自定义属性编辑器 为User的id,password属性赋值-->
+    <!--配置User自动注册的属性编辑器-->
+    <!--使用ApllicationContext 在配置文件中通过配置customEditorConfigurer即可注册自定义的属性编辑器-->
+    <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+        <property name="customEditors">
+
+            <map>
+              <entry key="com.smart.domain.User" value="com.smart.ioc.UserPropertyEditor"/>
+
+            </map>
+        </property>
+    </bean>
+
+    <!--通过自定义的编辑器为xhcontractExecution中的属性进行字面值的赋值-->
+    <bean id="editorXhContractExection" class="com.smart.domain.XhContractExecution">
+        <property name="contractType" value="合同-自定义编辑器的使用"/>
+        <property name="user" value="3894579,123456789"/>
+
+    </bean>
+
+    <!--通过配置MessageResource的实现类ResourceBundleMessageSource,批量加载不同区域资源文件信息-->
+    <bean id="resourceBean" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basenames">
+            <!--通过基名寻找加载普通的资源文件,相对于类路径-->
+            <list>
+                <value>resource</value>
+            </list>
+        </property>
+    </bean>
+
+    <!--通过配置MessageResource的实现类ReloadableResourceBundleMessageSource,定时刷新批量加载不同区域资源文件信息-->
+    <bean id="reloadSourceBean" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basenames">
+            <!--通过基名寻找加载普通的资源文件,相对于类路径-->
+            <list>
+                <value>resource</value>
+            </list>
+        </property>
+        <property name="cacheSeconds" value="9"/><!--刷新资源周期,以秒为单位-->
+    </bean>
+
+    <!--bean的名称只能为messageSource 这样在ApplicationContext中可以直接加在messageSource 国际化的信息资源在容器启动时会调用initMessageSource方法 查找名为messageSource的bean-->
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basenames">
+            <!--通过基名寻找加载普通的资源文件,相对于类路径-->
+            <list>
+                <value>resource</value>
+            </list>
+        </property>
+        <property name="cacheSeconds" value="9"/><!--刷新资源周期,以秒为单位-->
+    </bean>
+
+    <!--配置容器事件监听器和发布器-->
+    <bean class="com.smart.EventAndListener.EventListener"/>
+    <bean id="eventSender" class="com.smart.EventAndListener.EventSender"/>
+
+
+
+
+
+
+
+
+
+    </beans>

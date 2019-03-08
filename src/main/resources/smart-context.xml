@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mvc="http://www.springframework.org/schema/cache"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+       http://www.springframework.org/schema/context 
+       http://www.springframework.org/schema/context/spring-context-4.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+    
+    <!-- 扫描类包，将标注Spring注解的类自动转化Bean，同时完成Bean的注入 -->
+    <context:component-scan base-package="com.smart.dao"/>
+    <context:component-scan base-package="com.smart.service"/>
+	<context:component-scan base-package="com.smart.ioc"/>
+
+    <!--自动扫描组件Bean-->
+    <context:component-scan base-package="com.smart.springHook"/>
+
+
+
+    <!--配置自定义的BeanFactoryPostProcessor处理器-->
+    <bean id="myBeanFactoryPostProcessor" class="com.smart.springHook.PostProcessor.MyBeanFactoryPostProcessor"/>
+
+    <!--配置自定义的BeanPostProcessor处理器-->
+    <bean id="myBeanPostProcessor" class="com.smart.springHook.PostProcessor.MyBeanPostProcessor"/>
+
+    <!--<bean id="springContextUtils" class="com.smart.springHook.Aware.SpringContextUtils"/>-->
+
+    <!-- 配置数据源 -->
+	<!--加载配置数据源的配置文件-->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="mysql-jdbc.properties"/>
+		<property name="fileEncoding" value="utf-8"/>
+	</bean>
+
+	<bean id="dataSourceA" class="org.apache.commons.dbcp.BasicDataSource"
+		  p:driverClassName="${driverClassName}"
+		  p:url="${url}"
+		  p:username="${username}"
+		  p:password="${password}">
+	</bean>
+
+	<!--使用加密属性文件对配置信息进行加密处理-->
+	<!--加载自定义的属性编辑器-->
+	<!--<bean class="Utils.mysqlPropertyDesProcess" p:location="classpath*:mysql-jdbcDES.properties"
+		  p:fileEncoding="utf-8"/>-->
+
+	<!--通过自定义的加密属性编辑器配置数据源-->
+	<!--<bean id="dataSourceB" class="org.apache.commons.dbcp.BasicDataSource"
+		  p:driverClassName="${driverClassNameDES}"
+	      p:url="${urlDES}"
+	      p:username="${usernameDES}"
+		  p:password="${passwordDES}"/>-->
+
+
+	<!--与数据连接加载系统配置信息 -->
+	<bean id="systemSettingConf" class="com.smart.domain.SystemSettingManageInIt"
+		  p:dataSource-ref="dataSource"
+		  init-method="initSystemSetting"/>
+
+	<!--引用其他bean的属性值-->
+	<bean id="systemSettingInfo" class="com.smart.domain.SystemSetting"
+		  p:sessionTimeOut="#{systemSettingConf.sessionTimeOut}"
+		  p:refeshCycle="#{systemSettingConf.refeshCycle}"/>
+
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		p:driverClassName="com.mysql.jdbc.Driver"
+		p:url="jdbc:mysql://localhost:3306/springstudy"
+		p:username="root"
+		p:password="">
+	</bean>
+
+	<!-- 配置Jdbc模板  -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate"
+		p:dataSource-ref="dataSource" />
+
+	<!-- 配置事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+		p:dataSource-ref="dataSource" />
+
+	<aop:config proxy-target-class="true">
+		<aop:pointcut id="serviceMethod"
+			expression="(execution(* com.smart.service..*(..)))and (@annotation(org.springframework.transaction.annotation.Transactional)) " />
+		<aop:advisor pointcut-ref="serviceMethod" advice-ref="txAdvice" />
+	</aop:config>
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="*" rollback-for="Throwable" propagation="REQUIRED"/>
+		</tx:attributes>
+	</tx:advice>
+</beans>
+
